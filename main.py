@@ -14,39 +14,39 @@ def format_seconds_as_mm_ss(seconds):
         math.floor(seconds/60.0), math.floor(seconds) % 60)
 
 
-class PomodoroHandler(telepot.helper.ChatHandler):
+class TimerHandler(telepot.helper.ChatHandler):
     def __init__(self, seed_tuple, timeout):
-        super(PomodoroHandler, self).__init__(seed_tuple, timeout)
-        self._current_pomodoro_handler = None
+        super(TimerHandler, self).__init__(seed_tuple, timeout)
+        self._current_timer_handler = None
 
     @asyncio.coroutine
     def on_message(self, msg):
-        if "/tomato" in msg["text"]:
-            yield from self.sender.sendMessage("I AM A TOMATO!!!")
-        if "/pomodorostart" in msg["text"]:
-            yield from self.pomodoro_begin(msg)
+        if "/starttimer" in msg["text"]:
+            yield from self.timer_begin(msg)
         if "/timeleft" in msg["text"]:
-            yield from self.pomodoro_time_left(msg)
-        if "/cancel" in msg["text"]:
-            yield from self.pomodoro_cancel(msg)
+            yield from self.timer_time_left(msg)
+        if "/canceltimer" in msg["text"]:
+            yield from self.timer_cancel(msg)
         if "/currentgoal" in msg["text"]:
-            yield from self.pomodoro_current_goal(msg)
+            yield from self.timer_current_goal(msg)
         if "/compliment" in msg["text"]:
             yield from self.compliment(msg)
+        if "/tomato" in msg["text"]:
+            yield from self.sender.sendMessage("I AM A TOMATO!!!")
 
     @asyncio.coroutine
-    def pomodoro_current_goal(self, msg):
+    def timer_current_goal(self, msg):
         try:
             yield from self.sender.sendMessage(self.current_goal)
         except AttributeError:
             yield from self.sender.sendMessage("NO GOAL.")
 
     @asyncio.coroutine
-    def pomodoro_cancel(self, msg):
-        if self._current_pomodoro_handler is not None:
+    def timer_cancel(self, msg):
+        if self._current_timer_handler is not None:
             yield from self.sender.sendMessage("TIMER CANCELLED.")
-            self._current_pomodoro_handler.cancel()
-            self._current_pomodoro_handler = None
+            self._current_timer_handler.cancel()
+            self._current_timer_handler = None
         else:
             yield from self.sender.sendMessage("TIMER NOT STARTED.")
             
@@ -62,29 +62,29 @@ class PomodoroHandler(telepot.helper.ChatHandler):
             "YOUR COMMAND OF LANGUAGE IS ... EXISTENT.",
             "GO HUMAN GO.",
             "YOUR HAIR IS INTERESTING.",
-            "GET BACK TO WORK." if self._current_pomodoro_handler is not None else "BREAK OVER.",
+            "GET BACK TO WORK." if self._current_timer_handler is not None else "BREAK OVER.",
             ]
         yield from self.sender.sendMessage(random.choice(compliments))
 
 
-    def pomodoro_time_left(self, msg):
-        if self._current_pomodoro_handler is not None:
+    def timer_time_left(self, msg):
+        if self._current_timer_handler is not None:
             yield from self.sender.sendMessage(
                 "{} LEFT TO ACHIEVE ".format(
                 format_seconds_as_mm_ss(
-                    self._current_pomodoro_handler._when-asyncio.get_event_loop().time()))+self.current_goal)
+                    self._current_timer_handler._when-asyncio.get_event_loop().time()))+self.current_goal)
         else:
             yield from self.sender.sendMessage(
                 "TIMER NOT STARTED.")
 
     @asyncio.coroutine
-    def pomodoro_end(self, msg):
-        yield from self.sender.sendMessage("POMODORO END!")
+    def timer_end(self, msg):
+        yield from self.sender.sendMessage("TIMER END!")
         yield from self.sender.sendMessage(
             "YOU ACHIEVE "+self.current_goal+"?")
 
     @asyncio.coroutine
-    def pomodoro_begin(self, msg):
+    def timer_begin(self, msg):
         yield from self.sender.sendMessage("YOUR GOAL:")
         self.listener.set_options(timeout=30)
         try:
@@ -102,10 +102,10 @@ class PomodoroHandler(telepot.helper.ChatHandler):
 
         h = asyncio.get_event_loop().call_later(
             60*25,
-            lambda: asyncio.async(self.pomodoro_end(msg)))
-        self._current_pomodoro_handler = h
+            lambda: asyncio.async(self.timer_end(msg)))
+        self._current_timer_handler = h
         
-        yield from self.sender.sendMessage("POMODORO BEGIN!")
+        yield from self.sender.sendMessage("TIMER BEGIN!")
 
 if __name__ == "__main__":
     config = yaml.load(open("config.yml", "r"))
@@ -113,7 +113,7 @@ if __name__ == "__main__":
         config["telegram_bot_id"],
         [
             (per_chat_id(), create_open(
-                PomodoroHandler, timeout=72*3600)),
+                TimerHandler, timeout=72*3600)),
         ])
 
     loop = asyncio.get_event_loop()

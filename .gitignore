@@ -1,6 +1,10 @@
 # ignore yaml files
 *.yml
 
+# ignore temporary files
+*~
+\#*\#
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
