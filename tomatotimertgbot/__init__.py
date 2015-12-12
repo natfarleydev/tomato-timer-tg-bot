@@ -31,7 +31,7 @@ class Tomato(telepot.helper.ChatHandler):
 	# make this auto start task with set goal
         elif ("/starttaskquick" == msg["text"] or 
             "/tsq" == msg["text"]): 
-            yield from self.task_begin(msg,delay=10)
+            yield from self.task_begin(msg, delay=10, goal="NOTHING")
         elif ("/starttask" == msg["text"] or 
             "/st" == msg["text"]): 
             yield from self.task_begin(msg)
@@ -64,7 +64,7 @@ class Tomato(telepot.helper.ChatHandler):
 
     @asyncio.coroutine
     def task_cancel(self, msg):
-        if self._current_task is not None:
+        if self._current_task:
             yield from self.sender.sendMessage("TASK CANCELLED.")
             self._current_task.cancel()
             self._current_task = None
@@ -83,13 +83,13 @@ class Tomato(telepot.helper.ChatHandler):
             "YOUR COMMAND OF LANGUAGE IS ... EXISTENT.",
             "GO HUMAN GO.",
             "YOUR HAIR IS INTERESTING.",
-            "GET BACK TO WORK." if self._current_task is not None else "BREAK OVER.",
+            "GET BACK TO WORK." if self._current_task else "BREAK OVER.",
             ]
         yield from self.sender.sendMessage(random.choice(compliments))
 
 
     def task_time_left(self, msg):
-        if self._current_task is not None:
+        if self._current_task:
             yield from self.sender.sendMessage(
                 "{} LEFT TO ACHIEVE ".format(
                 format_seconds_as_mm_ss(
@@ -144,10 +144,10 @@ class Tomato(telepot.helper.ChatHandler):
 
     @asyncio.coroutine
     def task_begin(self, msg, delay=60*25, goal=None):
-        if goal is None:
-            current_goal = yield from self.request_goal(msg)
-        else:
+        if goal:
             current_goal = goal
+        else:
+            current_goal = yield from self.request_goal(msg)
 
         h = task.Task(
             self.chat_id,
