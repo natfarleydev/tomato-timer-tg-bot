@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# TODO make the current goal part of the Task object
 import asyncio
 import telepot
 import yaml
@@ -29,23 +28,26 @@ class Tomato(telepot.helper.ChatHandler):
         # TODO make sure that thing like /tsq is not matched as /ts
         if "/help" in msg["text"]:
             yield from self.sender.sendMessage(help.text)
+	# make this auto start task with set goal
         elif ("/starttaskquick" in msg["text"] or 
             "/tsq" in msg["text"]): 
             yield from self.task_begin(msg,delay=10)
         elif ("/starttask" in msg["text"] or 
-            "/ts" in msg["text"]): 
+            "/st" in msg["text"]): 
             yield from self.task_begin(msg)
         elif ("/timeleft" in msg["text"] or 
-            "/tl" in msg["text"]):
+			"/tl" in msg["text"]):
             yield from self.task_time_left(msg)
         elif ("/canceltask" in msg["text"] or
-              "/tc" in msg["text"]):
+			"/ct" in msg["text"]):
             yield from self.task_cancel(msg)
-        elif "/currentgoal" in msg["text"]:
+        elif ("/displaytask" in msg["text"] or
+			"/dt" in msg["text"]):
             yield from self.task_current_goal(msg)
         elif "/compliment" in msg["text"]:
             yield from self.compliment(msg)
-        elif "/tomato" in msg["text"]:
+        elif ("/tomato" in msg["text"] or
+			"\t" in msg["text"]):
             yield from self.sender.sendMessage("I AM A TOMATO!!!")
         elif "/alltasks" in msg["text"]:
             yield from self.send_all_tasks_for_user(msg)
