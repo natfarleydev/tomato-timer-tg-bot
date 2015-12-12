@@ -5,7 +5,7 @@ import telepot
 from telepot.async.delegate import create_open
 from telepot.delegate import per_chat_id
 
-from tomatotimertgbot import TimerHandler
+from tomatotimertgbot import Tomato
 
 if __name__ == "__main__":
     config = yaml.load(open("config.yml", "r"))
@@ -13,7 +13,7 @@ if __name__ == "__main__":
         config["telegram_bot_id"],
         [
             (per_chat_id(), create_open(
-                TimerHandler, timeout=72*3600)),
+                Tomato, timeout=72*3600)),
         ])
 
     loop = asyncio.get_event_loop()
