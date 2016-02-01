@@ -1,20 +1,10 @@
+#!/usr/bin/env python3
 import asyncio
 import dataset
 import datetime
 
 class Task(object):
     def __init__(self, chat_id, goal, callback, delay=25*60):
-#        base_event_loop = asyncio.get_event_loop()
-#        print("Getting myself")
-#        super().__init__(
-#            base_event_loop.time()+delay,
-#            callback,
-#            (),
-#            base_event_loop,
-#            )
-#        super()._scheduled = True
-#
-#        print("Got myself?")
 
         self.asyncio_handle = asyncio.get_event_loop().call_later(
             delay,
@@ -33,9 +23,10 @@ class Task(object):
                 ))
         print("Finished geting myself.")
 
+
     @asyncio.coroutine
     def cancel(self):
-        yield from self.asyncio_handle.cancel()
+        self.asyncio_handle.cancel()
 
     def complete(self):
         """This function should be called to complete a task.
