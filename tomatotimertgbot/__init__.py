@@ -30,7 +30,7 @@ class Tomato(telepot.helper.ChatHandler):
             yield from self.sender.sendMessage(help.text)
 	# make this auto start task with set goal
         elif ("/starttaskquick" == msg["text"] or 
-            "/tsq" == msg["text"]): 
+            "/q" == msg["text"]): 
             yield from self.task_begin(msg, delay=10, goal="NOTHING")
         elif ("/starttask" == msg["text"] or 
             "/st" == msg["text"]): 
@@ -62,11 +62,12 @@ class Tomato(telepot.helper.ChatHandler):
         except AttributeError:
             yield from self.sender.sendMessage("NO GOAL.")
 
+    # TODO get this to confirm task needs cancelling
     @asyncio.coroutine
     def task_cancel(self, msg):
         if self._current_task:
             yield from self.sender.sendMessage("TASK CANCELLED.")
-            self._current_task.cancel()
+            yield from self._current_task.cancel()
             self._current_task = None
         else:
             yield from self.sender.sendMessage("TASK NOT STARTED.")

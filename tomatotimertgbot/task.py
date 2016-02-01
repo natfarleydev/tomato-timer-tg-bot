@@ -15,7 +15,7 @@ class Task(object):
 #        super()._scheduled = True
 #
 #        print("Got myself?")
-            
+
         self.asyncio_handle = asyncio.get_event_loop().call_later(
             delay,
             callback)
@@ -31,18 +31,18 @@ class Task(object):
                     goal=self.goal,
                     completed=False,
                 ))
-        print("Finishedc geting myself.")
-       
+        print("Finished geting myself.")
+
     @asyncio.coroutine
     def cancel(self):
         yield from self.asyncio_handle.cancel()
-    
+
     def complete(self):
         """This function should be called to complete a task.
 
         Tasks should only complete once the delay is up, but no
         checking is done to make sure this is the case
-        
+
         TODO make this automatic (maybe inherit from asyncio.Handler?).
 
         """
@@ -55,11 +55,9 @@ class Task(object):
                     completed=True,
                     end_time=datetime.datetime.now(),
                 ), ['chat_id', 'start_time'])
-                    
-    
+
+
 
     def time_remaining(self):
         """Return time remaining in Task."""
         return self.asyncio_handle._when - asyncio.get_event_loop().time()
-        
-        
