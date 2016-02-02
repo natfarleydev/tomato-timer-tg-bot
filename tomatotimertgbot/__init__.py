@@ -28,32 +28,40 @@ class Tomato(telepot.helper.ChatHandler):
         # TODO make sure that thing like /tsq is not matched as /ts
         if "/help" == msg["text"]:
             yield from self.sender.sendMessage(help.text)
-	# make this auto start task with set goal
-        elif ("/starttaskquick" == msg["text"] or 
-            "/q" == msg["text"]): 
+    # make this auto start task with set goal
+        elif ("/starttaskquick" == msg["text"] or
+            "/q" == msg["text"]):
             yield from self.task_begin(msg, delay=10, goal="NOTHING")
-        elif ("/starttask" == msg["text"] or 
-            "/st" == msg["text"]): 
+        elif ("/starttask" == msg["text"] or
+            "/st" == msg["text"]):
             yield from self.task_begin(msg)
-        elif ("/timeleft" == msg["text"] or 
-			"/tl" == msg["text"]):
+        elif ("/timeleft" == msg["text"] or
+            "/tl" == msg["text"]):
             yield from self.task_time_left(msg)
         elif ("/canceltask" == msg["text"] or
-			"/ct" == msg["text"]):
+            "/ct" == msg["text"]):
             yield from self.task_cancel(msg)
         elif ("/displaytask" == msg["text"] or
-			"/dt" == msg["text"]):
+            "/dt" == msg["text"]):
             yield from self.task_current_goal(msg)
         elif "/compliment" == msg["text"]:
             yield from self.compliment(msg)
         elif ("/tomato" == msg["text"] or
-			"/t" == msg["text"]):
+            "/t" == msg["text"]):
             yield from self.sender.sendMessage("I AM A TOMATO!!!")
         elif "/alltasks" == msg["text"]:
             yield from self.send_all_tasks_for_user(msg)
-        elif ("/tt" == msg["text"] or 
+        elif ("/tt" == msg["text"] or
               "/taskstoday" == msg["text"]):
             yield from self.tasks_today_for_user(msg)
+        elif("/shortbreak" == msg["text"] or
+                 "/sb" == msg["text"]):
+            yield from self.break_time(msg, delay=60*5)
+        elif("/longbreak" == msg["text"] or
+                 "/lb" == msg["text"]):
+            yield from self.break_time(msg, delay=60*20)
+        elif("/tinybreak" == msg["text"]):
+            yield from self.break_time(msg, delay=1)
 
     @asyncio.coroutine
     def task_current_goal(self, msg):
@@ -71,7 +79,7 @@ class Tomato(telepot.helper.ChatHandler):
             self._current_task = None
         else:
             yield from self.sender.sendMessage("TASK NOT STARTED.")
-            
+
 
     @asyncio.coroutine
     def compliment(self, msg):
@@ -112,7 +120,7 @@ class Tomato(telepot.helper.ChatHandler):
             l.capture(chat__id=self.chat_id)
             answer = yield from l.wait()
             # TODO check the answer is in the affirmative with a reply keyboard
-            if answer['text'] == 'Yes': 
+            if answer['text'] == 'Yes':
                 self._current_task.complete()
                 yield from self.sender.sendMessage("GOOD JOB.", reply_markup={'hide_keyboard':True})
             else:
@@ -121,7 +129,7 @@ class Tomato(telepot.helper.ChatHandler):
         except telepot.helper.WaitTooLong as e:
             yield from self.sender.sendMessage("TOO SLOW.", reply_markup={'hide_keyboard':True})
             raise(e)
-        
+
         # There is now no current task, let the old one fall into
         # garbage collection and die a natural death
         self._current_task = None
@@ -144,6 +152,13 @@ class Tomato(telepot.helper.ChatHandler):
         return current_goal
 
     @asyncio.coroutine
+    def break_time(self, msg, delay=60*5):
+        """A break function."""
+        yield from self.sender.sendMessage("BREAK {:d} MIN STARTED".format(int(delay/60)))
+        yield from asyncio.sleep(delay)
+        yield from self.sender.sendMessage("BREAK OVER")
+
+    @asyncio.coroutine
     def task_begin(self, msg, delay=60*25, goal=None):
         if goal:
             current_goal = goal
@@ -157,16 +172,16 @@ class Tomato(telepot.helper.ChatHandler):
             delay=delay,
         )
         self._current_task = h
-        
+
         yield from self.sender.sendMessage("TASK BEGIN!")
-    
+
     @asyncio.coroutine
     def send_all_tasks_for_user(self, msg):
         with dataset.connect("sqlite:///tasks.db") as d:
             all_tasks_for_user = str(list(d['tasks'].find(chat_id=self.chat_id)))
             yield from self.sender.sendMessage(all_tasks_for_user)
-                            
-                                                             
+
+
     @asyncio.coroutine
     def tasks_today_for_user(self, msg):
         with dataset.connect("sqlite:///tasks.db") as d:
@@ -185,4 +200,3 @@ class Tomato(telepot.helper.ChatHandler):
                     string_list.append("{:%H:%M} {goal}".format(
                     x['start_time'], goal=x['goal']))
                 yield from self.sender.sendMessage("\n".join(string_list))
-
