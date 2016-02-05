@@ -1,6 +1,10 @@
 # ignore yaml files
 *.yml
 
+# Ignore unimportant files
+*.png
+*.db
+
 # ignore temporary files
 *~
 \#*\#
